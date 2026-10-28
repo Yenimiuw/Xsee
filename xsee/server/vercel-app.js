@@ -399,7 +399,9 @@ router.post('/monitor/check-signals', teacherOnly, asyncRoute(async (_req, res) 
 router.use((_req, res) => res.status(404).json({ error: 'not found' }));
 
 app.use(cors());
-app.use(express.json({ limit: '256kb' }));
+if (!process.env.VERCEL) {
+  app.use(express.json({ limit: '256kb' }));
+}
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/api', router);
 app.use((error, _req, res, _next) => {
