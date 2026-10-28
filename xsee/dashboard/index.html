@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Xsee — Teacher Dashboard</title>
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<main id="login-view" class="login hidden">
+  <form id="login-form" class="login-card" autocomplete="on">
+    <div class="brand brand-lg"><img src="logo.svg" alt=""><span><b>X</b>see</span></div>
+    <p class="tagline">See how your students are doing during online exams — live.</p>
+    <label>Username<input id="login-user" name="username" autocomplete="username" required autofocus></label>
+    <label>Password<input id="login-pass" name="password" type="password" autocomplete="current-password" required></label>
+    <p id="login-error" class="error" role="alert"></p>
+    <button class="btn btn-primary" type="submit">Sign in</button>
+  </form>
+</main>
+
+<!-- APP -->
+<div id="app-view" class="app hidden">
+  <aside class="sidebar">
+    <div class="brand"><img src="logo.svg" alt=""><span><b>X</b>see</span></div>
+    <div class="side-head">
+      <span>Exams</span>
+      <button id="add-exam-btn" class="btn btn-orange btn-sm">+ Add exam</button>
+    </div>
+    <nav id="exam-list" class="exam-list"></nav>
+    <div class="side-foot">
+      <span id="conn" class="conn"><i></i><em>Connecting…</em></span>
+      <button id="logout-btn" class="link-btn">Sign out</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <section id="empty-state" class="empty">
+      <img src="logo.svg" alt="" width="64" height="64">
+      <h2>Welcome to Xsee</h2>
+      <p id="empty-text">Add your first exam to start monitoring. Paste the Google Form link students will open.</p>
+    </section>
+
+    <section id="exam-view" class="hidden">
+      <header class="exam-head">
+        <div>
+          <h1 id="exam-title"></h1>
+          <a id="exam-link" class="muted small" target="_blank" rel="noopener"></a>
+        </div>
+        <div class="head-actions">
+          <button id="export-btn" class="btn btn-ghost btn-sm">Export CSV</button>
+          <button id="close-exam-btn" class="btn btn-ghost btn-sm"></button>
+          <button id="delete-exam-btn" class="btn btn-ghost btn-sm danger">Delete</button>
+        </div>
+      </header>
+
+      <div class="stats">
+        <div class="stat"><span>Students</span><b id="st-students">0</b></div>
+        <div class="stat blue"><span>Online now</span><b id="st-online">0</b></div>
+        <div class="stat orange"><span>Warnings</span><b id="st-warnings">0</b></div>
+        <div class="stat red"><span>No signal</span><b id="st-nosignal">0</b></div>
+      </div>
+
+      <div class="toolbar">
+        <input id="search" type="search" placeholder="Search name, student ID or email">
+        <select id="status-filter">
+          <option value="">All statuses</option>
+          <option>ACTIVE</option><option>AWAY</option><option>IDLE</option>
+          <option>NO_SIGNAL</option><option>SUBMITTED</option><option>CLOSED</option><option>UNTRACKED</option>
+        </select>
+      </div>
+
+      <div class="card table-wrap">
+        <table id="students-table">
+          <thead>
+            <tr>
+              <th>Student</th><th>Status</th><th class="num">Tab switches</th><th class="num">Idle</th>
+              <th class="num">Warnings</th><th class="num">Time away</th><th>Last seen</th>
+            </tr>
+          </thead>
+          <tbody id="students-body"></tbody>
+        </table>
+        <p id="students-empty" class="empty-row hidden">No students yet. Rows appear here as soon as a student opens the exam with the extension on.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Student drawer -->
+  <aside id="drawer" class="drawer hidden" aria-label="Student log">
+    <header>
+      <div>
+        <h2 id="dr-name"></h2>
+        <p id="dr-meta" class="muted small"></p>
+      </div>
+      <button id="dr-close" class="icon-btn" aria-label="Close">×</button>
+    </header>
+    <div id="dr-stats" class="dr-stats"></div>
+    <div class="dr-filters">
+      <select id="dr-type">
+        <option value="">All events</option>
+        <option value="TAB_SWITCH">Tab switches</option>
+        <option value="WINDOW_BLUR">Window left</option>
+        <option value="RETURNED">Returns</option>
+        <option value="IDLE_WARNING">Idle warnings</option>
+        <option value="WARNING_ACKNOWLEDGED">Acknowledged</option>
+        <option value="TRACKING_OFF">Tracking off</option>
+        <option value="TRACKING_ON">Tracking on</option>
+        <option value="NO_SIGNAL">No signal</option>
+        <option value="SESSION_START">Session start</option>
+        <option value="SESSION_END">Session end</option>
+      </select>
+      <label>From <input id="dr-from" type="datetime-local"></label>
+      <label>To <input id="dr-to" type="datetime-local"></label>
+    </div>
+    <ol id="dr-timeline" class="timeline"></ol>
+  </aside>
+</div>
+
+<!-- Add exam dialog -->
+<dialog id="exam-dialog">
+  <form id="exam-form" method="dialog">
+    <h3>Register an exam</h3>
+    <label>Exam name<input id="ex-name" maxlength="120" placeholder="e.g. Midterm Quiz — Systems Integration" required></label>
+    <label>Google Form link
+      <input id="ex-url" type="url" placeholder="https://docs.google.com/forms/d/e/…/viewform" required>
+    </label>
+    <p class="hint">Use the link students open (the <b>Send → link</b> in Google Forms), not the editor link.</p>
+    <p id="ex-error" class="error" role="alert"></p>
+    <div class="dlg-actions">
+      <button type="button" id="ex-cancel" class="btn btn-ghost">Cancel</button>
+      <button type="submit" class="btn btn-primary">Register exam</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+</body>
+</html>

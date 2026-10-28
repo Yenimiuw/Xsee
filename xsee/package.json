@@ -1,0 +1,21 @@
+{
+  "name": "xsee",
+  "version": "1.0.0",
+  "description": "Xsee (ExamSee) - live monitoring of students taking Google Forms exams",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "simulate": "node tools/simulate-students.js",
+    "test": "node tools/smoke-test.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.3.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "@supabase/supabase-js": "^2.57.0",
+    "ws": "^8.18.0"
+  }
+}

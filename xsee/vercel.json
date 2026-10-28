@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "outputDirectory": "dashboard",
+  "functions": {
+    "api/[...path].js": {
+      "maxDuration": 30
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/check-signals",
+      "schedule": "* * * * *"
+    }
+  ]
+}

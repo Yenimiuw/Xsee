@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Xsee</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <img src="icons/icon48.png" alt="" width="32" height="32">
+    <div class="brand"><b>X</b>see <span>ExamSee</span></div>
+  </header>
+
+  <!-- Sign in / register -->
+  <form id="login-view" class="view hidden" autocomplete="off">
+    <p class="lead">Sign in once so your teacher can identify you during exams.</p>
+    <label>Full name<input id="f-name" required maxlength="100" placeholder="Juan Dela Cruz"></label>
+    <label>Student ID<input id="f-sid" required maxlength="40" placeholder="2024-00123"></label>
+    <label>Email<input id="f-email" type="email" required placeholder="you@school.edu">
+      <small id="email-hint"></small></label>
+    <details id="adv">
+      <summary>Server address</summary>
+      <input id="f-server" placeholder="http://localhost:3000">
+    </details>
+    <p id="login-error" class="error" role="alert"></p>
+    <button class="primary" type="submit">Sign in</button>
+    <p class="consent">By signing in you agree that Xsee records, <b>only during registered exams</b>: when you switch tabs or windows, how long you are away, and when you are idle — with timestamps. It does not read page content, answers or keystrokes.</p>
+  </form>
+
+  <!-- Main -->
+  <section id="main-view" class="view hidden">
+    <div class="who"><b id="who-name"></b><span id="who-meta"></span></div>
+    <div class="row">
+      <div>
+        <strong>Tracking</strong>
+        <span id="track-state" class="sub"></span>
+      </div>
+      <label class="switch"><input id="toggle" type="checkbox"><i></i></label>
+    </div>
+    <p id="lock-note" class="note hidden">An exam is open, so tracking is locked until you submit or close it.</p>
+    <p id="toggle-error" class="error" role="alert"></p>
+    <div class="row small-row">
+      <span id="server-state" class="sub"></span>
+      <button id="logout" class="link">Sign out</button>
+    </div>
+  </section>
+
+  <script src="popup.js"></script>
+</body>
+</html>
