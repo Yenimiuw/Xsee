@@ -106,6 +106,15 @@
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: $('login-user').value.trim(), password: $('login-pass').value }),
       });
+      const contentType = r.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        await r.text();
+        throw new Error(
+          r.status === 404
+            ? 'The API route was not found. Make sure Vercel deployed the latest commit with the project root set to the folder containing package.json.'
+            : `The API returned a non-JSON response (HTTP ${r.status}). Check the Vercel function logs.`,
+        );
+      }
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || 'Login failed');
       state.token = data.token;

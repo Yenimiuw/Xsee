@@ -15,7 +15,7 @@ async function start(port = process.env.PORT || 3000) {
   app.use(cors()); // the extension calls this API from chrome-extension:// origins
   app.use(express.json({ limit: '256kb' }));
   app.use('/api', routes);
-  app.use(express.static(path.join(__dirname, '..', 'dashboard')));
+  app.use(express.static(path.join(__dirname, '..', 'public')));
 
   const server = http.createServer(app);
   attach(server);

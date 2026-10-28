@@ -14,9 +14,9 @@ Teacher's browser (dashboard) --> Vercel static frontend --> Supabase Realtime
 ## Folder map
 
 ```
+index.js     Vercel Express entry point
 server/      Node.js backend (local SQLite API and Vercel/Supabase API)
-api/         Vercel serverless API entry point
-dashboard/   Teacher website (plain HTML/CSS/JS; Vercel static frontend)
+public/      Teacher website (plain HTML/CSS/JS; Vercel static frontend)
 supabase/    PostgreSQL schema and Realtime policies
 extension/   Chrome extension (Manifest V3)
 tools/       simulate-students.js (fake students), smoke-test.js (automatic test)
@@ -52,10 +52,10 @@ $env:IDLE_SECONDS=20; npm start    (Windows PowerShell)
 
 ## Deploy frontend and backend to Vercel
 
-The deployed **frontend** is the static dashboard in `dashboard/`. The **backend** is the serverless Express API in `api/[...path].js`, implemented by `server/vercel-app.js`. Supabase supplies the persistent PostgreSQL database and authenticated Realtime changes; Vercel's filesystem and function memory are not used for persistence.
+The deployed **frontend** is the static dashboard in `public/`. The **backend** is the Express app exported from the repository-root `index.js`, implemented by `server/vercel-app.js`; Vercel detects and deploys it as a serverless function. This follows Vercel's Express layout: the Express entry point is at the project root and static assets are in `public/`. Supabase supplies the persistent PostgreSQL database and authenticated Realtime changes; Vercel's filesystem and function memory are not used for persistence.
 
 1. Create a Supabase project. In its SQL Editor, run [`supabase/schema.sql`](./supabase/schema.sql) to create the tables, indexes, Realtime publication, and teacher-only Realtime policies.
-2. In Vercel, import this repository. The included `vercel.json` sets `dashboard/` as the static output and configures the API function. No Vercel Cron is used.
+2. In Vercel, import this repository with **Root Directory** set to the folder containing `package.json` and `index.js` (the repository root for this project). Use the Express framework preset or let Vercel detect Express automatically. No custom output directory or Vercel Cron is used.
 3. In Vercel Project Settings → Environment Variables, define the values below for Production (and Preview if needed). Use the Supabase project URL, `anon` key, `service_role` key, and JWT secret from the Supabase project settings. Keep the service-role key and signing secrets private; only the Supabase URL and anon key are sent to the teacher's browser.
 4. Set `TEACHER_USER` and a strong `TEACHER_PASS` before first use. The API creates that account on the first login request. Changing the password environment variable later does not change an already-created teacher's password.
 5. Redeploy after setting environment variables. Open the Vercel deployment URL and sign in with the teacher credentials.
@@ -77,7 +77,7 @@ Set these in Vercel's environment-variable settings rather than committing a `.e
 
 No `CRON_SECRET` is needed. While a teacher dashboard is open, it calls the authenticated `/api/monitor/check-signals` endpoint every 15 seconds. The API marks sessions with overdue heartbeats as `NO_SIGNAL`, adds the event log, and Supabase Realtime updates the dashboard. If no teacher dashboard is open, checks pause; stale sessions are checked when the next teacher dashboard opens. This avoids Vercel Hobby's Cron schedule restriction.
 
-For local development, the existing `npm start` and `npm test` commands still use SQLite and the local WebSocket server. The Vercel deployment uses Supabase instead; for local deployment testing, copy `.env.example` to `.env.local`, fill in real Supabase values, then run `npx vercel dev`. Do not commit `.env.local`.
+For local development, the existing `npm start` and `npm test` commands still use SQLite and the local WebSocket server. The Vercel deployment uses Supabase instead; for local deployment testing, copy `.env.example` to `.env.local`, fill in real Supabase values, then run `npx vercel dev`. Do not commit `.env.local`. After deployment, visit `/api/health`; a JSON `{"ok":true}` response confirms Vercel routed the request to the API.
 
 ## 2. Quick check that the backend works (no browser needed)
 

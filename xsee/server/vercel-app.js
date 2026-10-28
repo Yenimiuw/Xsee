@@ -3,6 +3,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
@@ -62,6 +63,10 @@ function requireRole(role) {
 
 const teacherOnly = requireRole('teacher');
 const studentOnly = requireRole('student');
+
+router.get('/health', (_req, res) => {
+  res.json({ ok: true });
+});
 
 async function ensureTeacher() {
   if (!teacherReady) {
@@ -395,6 +400,7 @@ router.use((_req, res) => res.status(404).json({ error: 'not found' }));
 
 app.use(cors());
 app.use(express.json({ limit: '256kb' }));
+app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/api', router);
 app.use((error, _req, res, _next) => {
   console.error('API request failed', error);
