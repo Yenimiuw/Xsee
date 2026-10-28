@@ -14,7 +14,7 @@ Teacher's browser (dashboard) --> Vercel static frontend --> Supabase Realtime
 ## Folder map
 
 ```
-api/         Vercel serverless API function
+api/         Vercel serverless API function and shared API-path rewrite
 server/      Node.js backend (local SQLite API and Vercel/Supabase API)
 public/      Teacher website (plain HTML/CSS/JS; Vercel static frontend)
 supabase/    PostgreSQL schema and Realtime policies
@@ -52,10 +52,10 @@ $env:IDLE_SECONDS=20; npm start    (Windows PowerShell)
 
 ## Deploy frontend and backend to Vercel
 
-The deployed **frontend** is the static dashboard in `public/`. The **backend** is the Express app exported by `api/[...path].js`, implemented by `server/vercel-app.js`; Vercel deploys it as a serverless function for `/api/*` requests. Supabase supplies the persistent PostgreSQL database and authenticated Realtime changes; Vercel's filesystem and function memory are not used for persistence.
+The deployed **frontend** is the static dashboard in `public/`. The **backend** is the Express app in `server/vercel-app.js`, exposed through the single serverless function `api/index.js`. The rewrite in `vercel.json` sends all `/api/*` requests to that function while preserving the original API path for Express. Supabase supplies the persistent PostgreSQL database and authenticated Realtime changes; Vercel's filesystem and function memory are not used for persistence.
 
 1. Create a Supabase project. In its SQL Editor, run [`supabase/schema.sql`](./supabase/schema.sql) to create the tables, indexes, Realtime publication, and teacher-only Realtime policies.
-2. In Vercel, import this repository with **Root Directory** set to `xsee` (the subfolder containing `package.json`, `api/`, and `public/`). Keep the Output Directory setting at its default; `vercel.json` explicitly sets `public` as the static output and configures the API function. No Vercel Cron is used.
+2. In Vercel, import this repository with **Root Directory** set to `xsee` (the subfolder containing `package.json`, `api/`, and `public/`). Keep the Output Directory setting at its default; `vercel.json` explicitly sets `public` as the static output and routes all API paths to one function. No Vercel Cron is used.
 3. In Vercel Project Settings → Environment Variables, define the values below for Production (and Preview if needed). Use the Supabase project URL, `anon` key, `service_role` key, and JWT secret from the Supabase project settings. Keep the service-role key and signing secrets private; only the Supabase URL and anon key are sent to the teacher's browser.
 4. Set `TEACHER_USER` and a strong `TEACHER_PASS` before first use. The API creates that account on the first login request. Changing the password environment variable later does not change an already-created teacher's password.
 5. Redeploy after setting environment variables. Open the Vercel deployment URL and sign in with the teacher credentials.
