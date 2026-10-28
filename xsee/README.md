@@ -55,7 +55,7 @@ $env:IDLE_SECONDS=20; npm start    (Windows PowerShell)
 The deployed **frontend** is the static dashboard in `dashboard/`. The **backend** is the serverless Express API in `api/[...path].js`, implemented by `server/vercel-app.js`. Supabase supplies the persistent PostgreSQL database and authenticated Realtime changes; Vercel's filesystem and function memory are not used for persistence.
 
 1. Create a Supabase project. In its SQL Editor, run [`supabase/schema.sql`](./supabase/schema.sql) to create the tables, indexes, Realtime publication, and teacher-only Realtime policies.
-2. In Vercel, import this repository. The included `vercel.json` sets `dashboard/` as the static output and configures the API function and once-a-minute no-signal check.
+2. In Vercel, import this repository. The included `vercel.json` sets `dashboard/` as the static output and configures the API function. No Vercel Cron is used.
 3. In Vercel Project Settings → Environment Variables, define the values below for Production (and Preview if needed). Use the Supabase project URL, `anon` key, `service_role` key, and JWT secret from the Supabase project settings. Keep the service-role key and signing secrets private; only the Supabase URL and anon key are sent to the teacher's browser.
 4. Set `TEACHER_USER` and a strong `TEACHER_PASS` before first use. The API creates that account on the first login request. Changing the password environment variable later does not change an already-created teacher's password.
 5. Redeploy after setting environment variables. Open the Vercel deployment URL and sign in with the teacher credentials.
@@ -70,11 +70,12 @@ The deployed **frontend** is the static dashboard in `dashboard/`. The **backend
 | `JWT_SECRET` | Yes | Signs Xsee teacher and student API login tokens; use a long random value |
 | `TEACHER_USER` | Yes | Username seeded when the first teacher login is attempted |
 | `TEACHER_PASS` | Yes | Password hashed and stored when the teacher is first created |
-| `CRON_SECRET` | Yes | Protects Vercel's scheduled no-signal check; use a separate random value |
 | `IDLE_SECONDS` | No | Idle-warning threshold; default `300` seconds |
 | `SIGNAL_TIMEOUT_SECONDS` | No | Time without a heartbeat before a student is marked `NO_SIGNAL`; default `90` seconds |
 
 Set these in Vercel's environment-variable settings rather than committing a `.env` file. `.env.example` lists the variable names for reference. The deployed Supabase database starts empty; the existing local `data/xsee.db` is left untouched and is not automatically migrated.
+
+No `CRON_SECRET` is needed. While a teacher dashboard is open, it calls the authenticated `/api/monitor/check-signals` endpoint every 15 seconds. The API marks sessions with overdue heartbeats as `NO_SIGNAL`, adds the event log, and Supabase Realtime updates the dashboard. If no teacher dashboard is open, checks pause; stale sessions are checked when the next teacher dashboard opens. This avoids Vercel Hobby's Cron schedule restriction.
 
 For local development, the existing `npm start` and `npm test` commands still use SQLite and the local WebSocket server. The Vercel deployment uses Supabase instead; for local deployment testing, copy `.env.example` to `.env.local`, fill in real Supabase values, then run `npx vercel dev`. Do not commit `.env.local`.
 

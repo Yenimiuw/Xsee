@@ -5,11 +5,5 @@
     "api/[...path].js": {
       "maxDuration": 30
     }
-  },
-  "crons": [
-    {
-      "path": "/api/cron/check-signals",
-      "schedule": "* * * * *"
-    }
-  ]
+  }
 }

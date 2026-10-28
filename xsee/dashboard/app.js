@@ -12,7 +12,7 @@
   try { savedRealtime = JSON.parse(store.get('xsee_realtime') || 'null'); } catch {}
   const state = {
     token: store.get('xsee_token'), realtime: savedRealtime,
-    exams: [], examId: null, students: [], drawer: null, realtimeClient: null, channel: null, ws: null, wsTimer: null,
+    exams: [], examId: null, students: [], drawer: null, realtimeClient: null, channel: null, ws: null, wsTimer: null, monitorTimer: null,
   };
 
   // ---------- API ----------
@@ -91,6 +91,8 @@
     state.realtime = null;
     if (state.ws) { state.ws.onclose = null; state.ws.close(); state.ws = null; }
     clearTimeout(state.wsTimer);
+    clearInterval(state.monitorTimer);
+    state.monitorTimer = null;
     if (state.channel) state.realtimeClient.removeChannel(state.channel);
     state.channel = null;
     state.realtimeClient = null;
@@ -311,6 +313,7 @@
           if (state.examId) selectExam(state.examId).catch(() => {});
         }
       });
+    startSignalChecks();
   }
   function connectWs() {
     clearTimeout(state.wsTimer);
@@ -321,13 +324,22 @@
       setConn(true);
       if (state.examId) selectExam(state.examId).catch(() => {});
       loadExams().catch(() => {});
+      startSignalChecks();
     };
     ws.onclose = (event) => {
       setConn(false);
+      clearInterval(state.monitorTimer);
+      state.monitorTimer = null;
       if (event.code === 4401) return logout();
       state.wsTimer = setTimeout(connectWs, 2000);
     };
     ws.onmessage = (event) => onLive(JSON.parse(event.data));
+  }
+  function startSignalChecks() {
+    if (state.monitorTimer) return;
+    const check = () => api('/monitor/check-signals', { method: 'POST' }).catch((error) => console.error('Signal check failed', error));
+    check();
+    state.monitorTimer = setInterval(check, 15000);
   }
   function onLive(msg) {
     if (msg.type === 'update') {

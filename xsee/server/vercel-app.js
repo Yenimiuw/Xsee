@@ -367,10 +367,7 @@ router.get('/exams/:id/export.csv', teacherOnly, asyncRoute(async (req, res) => 
   res.send(lines.join('\n'));
 }));
 
-router.get('/cron/check-signals', asyncRoute(async (req, res) => {
-  if (!process.env.CRON_SECRET || req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
-    return res.status(401).json({ error: 'unauthorized' });
-  }
+async function checkStaleSessions() {
   const cutoff = new Date(Date.now() - signalTimeoutSeconds * 1000).toISOString();
   const stale = check(await getDb().from('sessions').select('*')
     .is('ended_at', null).in('status', ['ACTIVE', 'AWAY', 'IDLE']).lt('last_seen', cutoff).limit(500));
@@ -387,7 +384,11 @@ router.get('/cron/check-signals', asyncRoute(async (req, res) => {
     }));
     changed += 1;
   }
-  res.json({ ok: true, changed });
+  return changed;
+}
+
+router.post('/monitor/check-signals', teacherOnly, asyncRoute(async (_req, res) => {
+  res.json({ ok: true, changed: await checkStaleSessions() });
 }));
 
 router.use((_req, res) => res.status(404).json({ error: 'not found' }));
