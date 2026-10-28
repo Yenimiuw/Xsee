@@ -255,15 +255,25 @@
 
   // ---------- student drawer ----------
   let drawerTimer;
+  const toDateTimeLocal = (value) => {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.valueOf())) return '';
+    return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  };
+
   async function openDrawer(pk) {
     state.drawer = pk;
     $('drawer').classList.remove('hidden');
-    ['dr-type', 'dr-from', 'dr-to'].forEach((id) => { $(id).value = ''; });
+    $('dr-type').value = '';
+    const student = state.students.find((row) => row.student_pk === pk);
+    $('dr-from').value = toDateTimeLocal(student?.started_at);
+    $('dr-to').value = toDateTimeLocal(student?.ended_at);
     await refreshDrawer();
   }
   function closeDrawer() { state.drawer = null; $('drawer').classList.add('hidden'); }
   $('dr-close').addEventListener('click', closeDrawer);
-  ['dr-type', 'dr-from', 'dr-to'].forEach((id) => $(id).addEventListener('change', refreshDrawer));
+  $('dr-type').addEventListener('change', refreshDrawer);
 
   async function refreshDrawer() {
     if (!state.drawer) return;
@@ -353,7 +363,14 @@
   function onLive(msg) {
     if (msg.type === 'update') {
       if (Number(msg.session.exam_id) === Number(state.examId)) {
-        selectExam(state.examId).catch(() => {});
+        selectExam(state.examId).then(() => {
+          const student = state.students.find((row) => row.session_id === msg.session.session_id);
+          if (student && state.drawer === student.student_pk) {
+            $('dr-from').value = toDateTimeLocal(student.started_at);
+            $('dr-to').value = toDateTimeLocal(student.ended_at);
+            refreshDrawerSoon();
+          }
+        }).catch(() => {});
       }
       loadExams().catch(() => {});
     } else if (msg.type === 'heartbeat') {

@@ -135,7 +135,7 @@ Then:
 1. Both students open the exam form. Their rows appear on the dashboard as ACTIVE.
 2. Student A switches tab, then comes back. The dashboard row turns AWAY, then ACTIVE again, flashes, shows a toast and beeps. Open the student to see the timeline with time away.
 3. Student B stays still (start the server with `IDLE_SECONDS=20`). The row turns IDLE and an alert appears.
-4. Click a student row to open the log, then try the filters (event type, date range). Click **Export CSV**.
+4. Click a student row to open the log, then filter by event type. Session start and end dates are filled from that student's recorded exam session; the end is blank while the session is still active. Click **Export CSV**.
 5. Close a student's exam tab or the whole browser: the row shows CLOSED, or NO SIGNAL if the browser died.
 
 ## 7. Simulating many students (the "100 students" proof)
