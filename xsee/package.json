@@ -2,7 +2,7 @@
   "name": "xsee",
   "version": "1.0.0",
   "description": "Xsee (ExamSee) - live monitoring of students taking Google Forms exams",
-  "main": "index.js",
+  "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
     "simulate": "node tools/simulate-students.js",
