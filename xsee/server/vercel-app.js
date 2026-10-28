@@ -399,14 +399,13 @@ router.post('/monitor/check-signals', teacherOnly, asyncRoute(async (_req, res) 
 router.use((_req, res) => res.status(404).json({ error: 'not found' }));
 
 app.use(cors());
-if (!process.env.VERCEL) {
-  app.use(express.json({ limit: '256kb' }));
-}
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/api', router);
 app.use((error, _req, res, _next) => {
   console.error('API request failed', error);
-  res.status(500).json({ error: 'Internal server error' });
+  const status = Number(error.status || error.statusCode) || 500;
+  res.status(status >= 400 && status < 600 ? status : 500)
+    .json({ error: status === 400 ? 'Invalid request body' : 'Internal server error' });
 });
 
 module.exports = { app };
